@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardador - Links e Notas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-record {
+            background: #48bb78;
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-record:hover {
+            background: #38a169;
+        }
+
+        .btn-record.recording {
+            background: #f56565;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .items-list {
+            margin-top: 20px;
+        }
+
+        .item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .item-link {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .item-link:hover {
+            text-decoration: underline;
+        }
+
+        .item-description {
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .item-date {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #fff5f5;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #c53030;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: #f56565;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e6f2ff;
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Guardador</h1>
+            <p>Guarde seus links e instruções para consultar depois</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('links')">🔗 Links</button>
+            <button class="tab-btn" onclick="switchTab('audio')">🎤 Instruções Orais</button>
+        </div>
+
+        <!-- Tab de Links -->
+        <div id="links-tab" class="tab-content active">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #2d3748;">Adicionar Novo Link</h2>
+                
+                <div class="input-group">
+                    <label for="link-title">Título *</label>
+                    <input type="text" id="link-title" placeholder="Ex: Artigo interessante sobre programação">
+                </div>
+
+                <div class="input-group">
+                    <label for="link-url">URL *</label>
+                    <input type="url" id="link-url" placeholder="https://exemplo.com">
+                </div>
+
+                <div class="input-group">
+                    <label for="link-description">Descrição</label>
+                    <textarea id="link-description" placeholder="Adicione notas ou contexto sobre este link..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="link-tags">Tags (separadas por vírgula)</label>
+                    <input type="text" id="link-tags" placeholder="programação, tutorial, javascript">
+                </div>
+
+                <button class="btn btn-primary" onclick="saveLink()">Guardar Link</button>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #2d3748;">Links Guardados</h2>
+                
+                <div class="search-box">
+                    <input type="text" id="search-links" placeholder="🔍 Pesquisar links..." onkeyup="searchLinks()">
+                </div>
+
+                <div id="links-list" class="items-list"></div>
+            </div>
+        </div>
+
+        <!-- Tab de Áudio -->
+        <div id="audio-tab" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #2d3748;">Gravar Instrução Oral</h2>
+                
+                <div class="recording-indicator" id="recording-indicator">
+                    <div class="recording-dot"></div>
+                    <span>A gravar... <span id="recording-time">0:00</span></span>
+                </div>
+
+                <button class="btn btn-record" id="record-btn" onclick="toggleRecording()">
+                    🎤 Iniciar Gravação
+                </button>
+
+                <div class="input-group">
+                    <label for="audio-title">Título *</label>
+                    <input type="text" id="audio-title" placeholder="Ex: Lembrete sobre reunião">
+                </div>
+
+                <div class="input-group">
+                    <label for="audio-description">Notas adicionais</label>
+                    <textarea id="audio-description" placeholder="Adicione contexto ou notas sobre esta gravação..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="audio-tags">Tags (separadas por vírgula)</label>
+                    <input type="text" id="audio-tags" placeholder="trabalho, importante, reunião">
+                </div>
+
+                <button class="btn btn-primary" onclick="saveAudio()" id="save-audio-btn" disabled>
+                    Guardar Instrução
+                </button>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #2d3748;">Instruções Guardadas</h2>
+                
+                <div class="search-box">
+                    <input type="text" id="search-audio" placeholder="🔍 Pesquisar instruções..." onkeyup="searchAudio()">
+                </div>
+
+                <div id="audio-list" class="items-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordingInterval;
+        let recordingSeconds = 0;
+        let currentAudioBlob = null;
+
+        // Inicializar ao carregar a página
+        window.onload = function() {
+            loadLinks();
+            loadAudio();
+        };
+
+        // Funções de Tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'links') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('links-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('audio-tab').classList.add('active');
+            }
+        }
+
+        // Funções de Links
+        async function saveLink() {
+            const title = document.getElementById('link-title').value.trim();
+            const url = document.getElementById('link-url').value.trim();
+            const description = document.getElementById('link-description').value.trim();
+            const tags = document.getElementById('link-tags').value.trim();
+
+            if (!title || !url) {
+                alert('Por favor, preencha o título e a URL');
+                return;
+            }
+
+            const link = {
+                id: Date.now(),
+                title,
+                url,
+                description,
+                tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                date: new Date().toISOString()
+            };
+
+            try {
+                const links = await getStorageData('links') || [];
+                links.unshift(link);
+                await setStorageData('links', links);
+                
+                // Limpar formulário
+                document.getElementById('link-title').value = '';
+                document.getElementById('link-url').value = '';
+                document.getElementById('link-description').value = '';
+                document.getElementById('link-tags').value = '';
+                
+                loadLinks();
+            } catch (error) {
+                console.error('Erro ao guardar link:', error);
+                alert('Erro ao guardar link. Por favor, tente novamente.');
+            }
+        }
+
+        async function loadLinks() {
+            try {
+                const links = await getStorageData('links') || [];
+                displayLinks(links);
+            } catch (error) {
+                console.error('Erro ao carregar links:', error);
+            }
+        }
+
+        function displayLinks(links) {
+            const listElement = document.getElementById('links-list');
+            
+            if (links.length === 0) {
+                listElement.innerHTML = `
+                    <div class="empty-state">
+                        <p>Ainda não tem links guardados</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Adicione seu primeiro link acima!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listElement.innerHTML = links.map(link => `
+                <div class="item">
+                    <div class="item-header">
+                        <div style="flex: 1;">
+                            <div class="item-title">${escapeHtml(link.title)}</div>
+                            <a href="${escapeHtml(link.url)}" target="_blank" class="item-link">${escapeHtml(link.url)}</a>
+                            ${link.description ? `<div class="item-description">${escapeHtml(link.description)}</div>` : ''}
+                            <div>
+                                ${link.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                            </div>
+                            <div class="item-date">${formatDate(link.date)}</div>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteLink(${link.id})">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteLink(id) {
+            if (!confirm('Tem certeza que deseja eliminar este link?')) return;
+            
+            try {
+                const links = await getStorageData('links') || [];
+                const filtered = links.filter(link => link.id !== id);
+                await setStorageData('links', filtered);
+                loadLinks();
+            } catch (error) {
+                console.error('Erro ao eliminar link:', error);
+            }
+        }
+
+        async function searchLinks() {
+            const query = document.getElementById('search-links').value.toLowerCase();
+            const links = await getStorageData('links') || [];
+            
+            const filtered = links.filter(link => 
+                link.title.toLowerCase().includes(query) ||
+                link.url.toLowerCase().includes(query) ||
+                link.description.toLowerCase().includes(query) ||
+                link.tags.some(tag => tag.toLowerCase().includes(query))
+            );
+            
+            displayLinks(filtered);
+        }
+
+        // Funções de Áudio
+        async function toggleRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                recordingSeconds = 0;
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    currentAudioBlob = audioBlob;
+                    document.getElementById('save-audio-btn').disabled = false;
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                
+                document.getElementById('record-btn').textContent = '⏹️ Parar Gravação';
+                document.getElementById('record-btn').classList.add('recording');
+                document.getElementById('recording-indicator').classList.add('active');
+                
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    document.getElementById('recording-time').textContent = 
+                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+                
+            } catch (error) {
+                alert('Erro ao aceder ao microfone. Verifique as permissões.');
+                console.error('Erro:', error);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                clearInterval(recordingInterval);
+                
+                document.getElementById('record-btn').textContent = '🎤 Iniciar Gravação';
+                document.getElementById('record-btn').classList.remove('recording');
+                document.getElementById('recording-indicator').classList.remove('active');
+            }
+        }
+
+        async function saveAudio() {
+            const title = document.getElementById('audio-title').value.trim();
+            const description = document.getElementById('audio-description').value.trim();
+            const tags = document.getElementById('audio-tags').value.trim();
+
+            if (!title) {
+                alert('Por favor, adicione um título');
+                return;
+            }
+
+            if (!currentAudioBlob) {
+                alert('Nenhuma gravação disponível');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const audioData = {
+                    id: Date.now(),
+                    title,
+                    description,
+                    tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                    audioBase64: reader.result,
+                    duration: recordingSeconds,
+                    date: new Date().toISOString()
+                };
+
+                try {
+                    const audios = await getStorageData('audios') || [];
+                    audios.unshift(audioData);
+                    await setStorageData('audios', audios);
+                    
+                    // Limpar formulário
+                    document.getElementById('audio-title').value = '';
+                    document.getElementById('audio-description').value = '';
+                    document.getElementById('audio-tags').value = '';
+                    document.getElementById('save-audio-btn').disabled = true;
+                    currentAudioBlob = null;
+                    recordingSeconds = 0;
+                    
+                    loadAudio();
+                } catch (error) {
+                    console.error('Erro ao guardar áudio:', error);
+                    alert('Erro ao guardar instrução. Por favor, tente novamente.');
+                }
+            };
+            reader.readAsDataURL(currentAudioBlob);
+        }
+
+        async function loadAudio() {
+            try {
+                const audios = await getStorageData('audios') || [];
+                displayAudio(audios);
+            } catch (error) {
+                console.error('Erro ao carregar áudios:', error);
+            }
+        }
+
+        function displayAudio(audios) {
+            const listElement = document.getElementById('audio-list');
+            
+            if (audios.length === 0) {
+                listElement.innerHTML = `
+                    <div class="empty-state">
+                        <p>Ainda não tem instruções guardadas</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Grave sua primeira instrução acima!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listElement.innerHTML = audios.map(audio => {
+                const minutes = Math.floor(audio.duration / 60);
+                const seconds = audio.duration % 60;
+                const durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                return `
+                    <div class="item">
+                        <div class="item-header">
+                            <div style="flex: 1;">
+                                <div class="item-title">${escapeHtml(audio.title)}</div>
+                                ${audio.description ? `<div class="item-description">${escapeHtml(audio.description)}</div>` : ''}
+                                <audio controls class="audio-player" src="${audio.audioBase64}"></audio>
+                                <div style="margin-top: 5px; font-size: 12px; color: #718096;">
+                                    Duração: ${durationText}
+                                </div>
+                                <div>
+                                    ${audio.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                                </div>
+                                <div class="item-date">${formatDate(audio.date)}</div>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteAudio(${audio.id})">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteAudio(id) {
+            if (!confirm('Tem certeza que deseja eliminar esta instrução?')) return;
+            
+            try {
+                const audios = await getStorageData('audios') || [];
+                const filtered = audios.filter(audio => audio.id !== id);
+                await setStorageData('audios', filtered);
+                loadAudio();
+            } catch (error) {
+                console.error('Erro ao eliminar áudio:', error);
+            }
+        }
+
+        async function searchAudio() {
+            const query = document.getElementById('search-audio').value.toLowerCase();
+            const audios = await getStorageData('audios') || [];
+            
+            const filtered = audios.filter(audio => 
+                audio.title.toLowerCase().includes(query) ||
+                audio.description.toLowerCase().includes(query) ||
+                audio.tags.some(tag => tag.toLowerCase().includes(query))
+            );
+            
+            displayAudio(filtered);
+        }
+
+        // Funções de armazenamento persistente
+        async function getStorageData(key) {
+            try {
+                const result = await window.storage.get(key);
+                return result ? JSON.parse(result.value) : null;
+            } catch (error) {
+                console.error(`Erro ao obter ${key}:`, error);
+                return null;
+            }
+        }
+
+        async function setStorageData(key, value) {
+            try {
+                await window.storage.set(key, JSON.stringify(value));
+            } catch (error) {
+                console.error(`Erro ao guardar ${key}:`, error);
+                throw error;
+            }
+        }
+
+        // Funções auxiliares
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (days === 0) return 'Hoje';
+            if (days === 1) return 'Ontem';
+            if (days < 7) return `Há ${days} dias`;
+            
+            return date.toLocaleDateString('pt-PT');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
